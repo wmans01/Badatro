@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="CENTER" spacing="20" style="-fx-background-color: #2C3E50;" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml" fx:controller="com.badatro.MainMenuController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Text text="BADATRO" style="-fx-font-size: 48px; -fx-fill: white; -fx-font-weight: bold;"/>
+    
+    <VBox spacing="10" alignment="CENTER" maxWidth="300">
+        <Button text="Play" onAction="#onPlayClick" styleClass="menu-button"/>
+        <Button text="Continue" onAction="#onContinueClick" styleClass="menu-button"/>
+        <Button text="Login" onAction="#onLoginClick" styleClass="menu-button" fx:id="loginButton"/>
+        <Button text="Quit" onAction="#onQuitClick" styleClass="menu-button"/>
+    </VBox>
+</VBox> 
