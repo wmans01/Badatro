@@ -8,6 +8,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * Represents the info panel that displays game information.
+ */
 public class InfoPanel {
     private final GameManager gameManager;
     private final Stage infoStage;
@@ -19,6 +22,10 @@ public class InfoPanel {
     private final Text chipsText;
     private final Text multText;
     
+    /**
+     * Constructs an InfoPanel with the given GameManager.
+     * @param gameManager The GameManager instance.
+     */
     public InfoPanel(GameManager gameManager) {
         this.gameManager = gameManager;
         this.infoStage = new Stage();
@@ -33,6 +40,9 @@ public class InfoPanel {
         setupStage();
     }
     
+    /**
+     * Sets up the info panel UI.
+     */
     private void setupStage() {
         VBox root = new VBox(10);
         root.setAlignment(Pos.CENTER_LEFT);
@@ -68,15 +78,24 @@ public class InfoPanel {
         infoStage.setResizable(false);
     }
     
+    /**
+     * Shows the info panel.
+     */
     public void show() {
         updateInfo();
         infoStage.show();
     }
     
+    /**
+     * Hides the info panel.
+     */
     public void hide() {
         infoStage.hide();
     }
     
+    /**
+     * Updates the info panel with the latest game information.
+     */
     public void updateInfo() {
         blindText.setText("Blind: " + gameManager.getBlindType());
         moneyText.setText("Money: " + gameManager.getPlayer().getMoney());
@@ -87,6 +106,11 @@ public class InfoPanel {
         multText.setText("Mult: 0"); // TODO: Add multiplier tracking to GameManager
     }
     
+    /**
+     * Updates the chips and multiplier display in the info panel.
+     * @param chips The number of chips to display.
+     * @param mult The multiplier to display.
+     */
     public void updateChipsAndMult(int chips, double mult) {
         chipsText.setText("Chips: " + chips);
         multText.setText("Mult: " + String.format("%.1f", mult));

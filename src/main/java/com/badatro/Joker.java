@@ -4,6 +4,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.util.List;
 
+/**
+ * Represents a joker card that can be bought in the shop and provides various bonuses during gameplay.
+ */
 public class Joker implements ShopItem {
     private final String name;
     private final String description;
@@ -13,6 +16,14 @@ public class Joker implements ShopItem {
     private ImageView imageView;
     private final GameManager gameManager;
     
+    /**
+     * Constructs a new joker with the specified properties.
+     * @param name The name of the joker.
+     * @param description The description of the joker's effect.
+     * @param cost The cost to buy the joker.
+     * @param imagePath The path to the joker's image.
+     * @param gameManager The game manager instance.
+     */
     private Joker(String name, String description, int cost, String imagePath, GameManager gameManager) {
         this.name = name;
         this.description = description;
@@ -32,39 +43,71 @@ public class Joker implements ShopItem {
         }
     }
     
+    /**
+     * Gets the name of the joker.
+     * @return The joker's name.
+     */
     @Override
     public String getName() {
         return name;
     }
     
+    /**
+     * Gets the description of the joker.
+     * @return The joker's description.
+     */
     @Override
     public String getDescription() {
         return description;
     }
     
+    /**
+     * Gets the cost of the joker.
+     * @return The joker's cost.
+     */
     @Override
     public int getCost() {
         return cost;
     }
     
+    /**
+     * Gets the image path of the joker.
+     * @return The path to the joker's image.
+     */
     @Override
     public String getImagePath() {
         return imagePath;
     }
     
+    /**
+     * Gets the ImageView for the joker.
+     * @return The ImageView displaying the joker.
+     */
     public ImageView getImageView() {
         return imageView;
     }
     
+    /**
+     * Checks if the joker is currently active.
+     * @return True if the joker is active, false otherwise.
+     */
     public boolean isActive() {
         return isActive;
     }
     
+    /**
+     * Sets the active state of the joker.
+     * @param active True to activate the joker, false to deactivate it.
+     */
     public void setActive(boolean active) {
         isActive = active;
     }
     
-    // Calculate bonus based on the joker's effect
+    /**
+     * Calculates the chip bonus provided by the joker based on the played cards.
+     * @param cards The list of cards being played.
+     * @return The chip bonus amount.
+     */
     public int calculateChipBonus(List<Card> cards) {
         if (!isActive) return 0;
         
@@ -80,6 +123,11 @@ public class Joker implements ShopItem {
         }
     }
     
+    /**
+     * Calculates the multiplier bonus provided by the joker based on the played cards.
+     * @param cards The list of cards being played.
+     * @return The multiplier bonus amount.
+     */
     public double calculateMultBonus(List<Card> cards) {
         if (!isActive) return 0.0;
         
@@ -117,12 +165,23 @@ public class Joker implements ShopItem {
         }
     }
     
+    /**
+     * Counts the number of cards of a specific suit in the given list.
+     * @param cards The list of cards to check.
+     * @param suit The suit to count.
+     * @return The number of cards with the specified suit.
+     */
     private int countSuit(List<Card> cards, int suit) {
         return (int) cards.stream()
                          .filter(card -> card.getSuit() == suit)
                          .count();
     }
     
+    /**
+     * Checks if the given cards contain a pair.
+     * @param cards The list of cards to check.
+     * @return True if there is a pair, false otherwise.
+     */
     private boolean hasPair(List<Card> cards) {
         return cards.stream()
                    .collect(java.util.stream.Collectors.groupingBy(Card::getRank))
@@ -131,17 +190,30 @@ public class Joker implements ShopItem {
                    .anyMatch(list -> list.size() >= 2);
     }
     
+    /**
+     * Checks if the given cards form a flush.
+     * @param cards The list of cards to check.
+     * @return True if the cards form a flush, false otherwise.
+     */
     private boolean hasFlush(List<Card> cards) {
         if (cards.size() < 5) return false;
         int firstSuit = cards.get(0).getSuit();
         return cards.stream().allMatch(card -> card.getSuit() == firstSuit);
     }
     
+    /**
+     * Gets the number of remaining discards for the player.
+     * @return The number of remaining discards.
+     */
     private int getRemainingDiscards() {
         return gameManager.getPlayer().getDiscardableHands();
     }
     
-    // Factory methods for creating different types of jokers
+    /**
+     * Creates a basic joker.
+     * @param gameManager The game manager instance.
+     * @return A new basic joker.
+     */
     public static Joker createJoker(GameManager gameManager) {
         return new Joker(
             "Joker",
@@ -152,6 +224,11 @@ public class Joker implements ShopItem {
         );
     }
     
+    /**
+     * Creates a greedy joker that provides bonuses for diamond cards.
+     * @param gameManager The game manager instance.
+     * @return A new greedy joker.
+     */
     public static Joker createGreedy(GameManager gameManager) {
         return new Joker(
             "Greedy Joker",
@@ -162,6 +239,11 @@ public class Joker implements ShopItem {
         );
     }
     
+    /**
+     * Creates a lusty joker that provides bonuses for heart cards.
+     * @param gameManager The game manager instance.
+     * @return A new lusty joker.
+     */
     public static Joker createLusty(GameManager gameManager) {
         return new Joker(
             "Lusty Joker",

@@ -7,6 +7,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+/**
+ * Represents the shop screen where players can interact with the shop.
+ */
 public class ShopScreen {
     private final GameManager gameManager;
     private final Stage stage;
@@ -14,12 +17,20 @@ public class ShopScreen {
     private Scene scene;
     private BorderPane root;
     
+    /**
+     * Constructs a ShopScreen with the given GameManager and Stage.
+     * @param gameManager The GameManager instance.
+     * @param stage The primary stage.
+     */
     public ShopScreen(GameManager gameManager, Stage stage) {
         this.gameManager = gameManager;
         this.stage = stage;
         this.shop = new Shop(gameManager.getPlayer(), gameManager, this);
     }
     
+    /**
+     * Shows the shop screen UI.
+     */
     public void show() {
         if (root == null) {
             root = new BorderPane();

@@ -14,6 +14,9 @@ import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import java.util.*;
 
+/**
+ * Represents the shop where players can buy and sell jokers.
+ */
 public class Shop {
     private final Player player;
     private final GameManager gameManager;
@@ -24,6 +27,12 @@ public class Shop {
     private Scene scene;
     private Label moneyLabel;
     
+    /**
+     * Constructs a Shop with the given player, GameManager, and ShopScreen.
+     * @param player The player.
+     * @param gameManager The GameManager instance.
+     * @param shopScreen The ShopScreen instance.
+     */
     public Shop(Player player, GameManager gameManager, ShopScreen shopScreen) {
         this.player = player;
         this.gameManager = gameManager;
@@ -36,6 +45,9 @@ public class Shop {
         setupShopUI();
     }
     
+    /**
+     * Initializes the available items in the shop.
+     */
     private void initializeItems() {
         // Add all jokers to a list
         List<Joker> allJokers = new ArrayList<>();
@@ -60,6 +72,9 @@ public class Shop {
         availableItems.addAll(allJokers.subList(0, 2));
     }
     
+    /**
+     * Sets up the shop UI.
+     */
     private void setupShopUI() {
         shopContainer.setPadding(new Insets(20));
         shopContainer.setAlignment(Pos.CENTER);
@@ -94,6 +109,11 @@ public class Shop {
         shopContainer.getChildren().addAll(titleLabel, moneyLabel, itemsContainer, returnButton);
     }
     
+    /**
+     * Creates a box for displaying a shop item.
+     * @param item The shop item to display.
+     * @return The HBox containing the item display.
+     */
     private HBox createItemBox(ShopItem item) {
         HBox itemBox = new HBox(20);
         itemBox.setAlignment(Pos.CENTER_LEFT);
@@ -138,6 +158,9 @@ public class Shop {
         return itemBox;
     }
     
+    /**
+     * Shows the shop UI.
+     */
     public void show() {
         // Reinitialize items to get new random jokers
         initializeItems();
@@ -157,10 +180,17 @@ public class Shop {
         stage.show();
     }
     
+    /**
+     * Hides the shop UI.
+     */
     public void hide() {
         stage.hide();
     }
     
+    /**
+     * Shows a prompt to sell a joker.
+     * @param joker The joker to sell.
+     */
     public void showSellPrompt(Joker joker) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Sell Joker");

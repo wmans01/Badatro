@@ -8,15 +8,26 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+/**
+ * Handles the UI for selecting a blind before starting the game.
+ */
 public class BlindSelectionScreen {
     private final GameManager gameManager;
     private final Stage stage;
     
+    /**
+     * Constructs a BlindSelectionScreen with the given GameManager and Stage.
+     * @param gameManager The GameManager instance.
+     * @param stage The primary stage.
+     */
     public BlindSelectionScreen(GameManager gameManager, Stage stage) {
         this.gameManager = gameManager;
         this.stage = stage;
     }
     
+    /**
+     * Shows the blind selection screen UI.
+     */
     public void show() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
@@ -53,6 +64,11 @@ public class BlindSelectionScreen {
         stage.setScene(scene);
     }
     
+    /**
+     * Updates the enabled/disabled state and style of a blind button.
+     * @param button The button to update.
+     * @param blindType The blind type associated with the button.
+     */
     private void updateButtonState(Button button, GameManager.BlindType blindType) {
         boolean canSelect = gameManager.canSelectBlind(blindType);
         button.setDisable(!canSelect);
@@ -64,6 +80,12 @@ public class BlindSelectionScreen {
         }
     }
     
+    /**
+     * Creates a button for selecting a blind type.
+     * @param text The button text.
+     * @param blindType The blind type for the button.
+     * @return The created Button.
+     */
     private Button createBlindButton(String text, GameManager.BlindType blindType) {
         Button button = new Button(text);
         button.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 10 20; -fx-min-width: 200px;");
@@ -78,6 +100,9 @@ public class BlindSelectionScreen {
         return button;
     }
     
+    /**
+     * Starts the game by showing the GameScreen.
+     */
     private void startGame() {
         GameScreen gameScreen = new GameScreen(gameManager, stage);
         gameScreen.show();

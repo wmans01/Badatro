@@ -3,6 +3,9 @@ package com.badatro;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Evaluates poker hands and calculates their scores.
+ */
 public class HandEvaluator {
     public static class HandResult {
         private final String handType;
@@ -23,6 +26,11 @@ public class HandEvaluator {
         public List<Card> getCards() { return new ArrayList<>(cards); }
     }
     
+    /**
+     * Evaluates a hand of cards and returns its score.
+     * @param cards The list of cards to evaluate.
+     * @return The score of the hand.
+     */
     public static HandResult evaluateHand(List<Card> cards) {
         if (cards == null || cards.isEmpty()) {
             return new HandResult("Invalid", 0, 0, new ArrayList<>());
@@ -77,6 +85,11 @@ public class HandEvaluator {
         return new HandResult("High Card", 5, 1, cards);
     }
     
+    /**
+     * Checks if a hand is a royal flush.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a royal flush, false otherwise.
+     */
     private static boolean isRoyalFlush(List<Card> cards) {
         if (!isStraightFlush(cards)) return false;
         List<Integer> ranks = cards.stream()
@@ -86,10 +99,20 @@ public class HandEvaluator {
         return ranks.get(0) == 10 && ranks.get(4) == 14;
     }
     
+    /**
+     * Checks if a hand is a straight flush.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a straight flush, false otherwise.
+     */
     private static boolean isStraightFlush(List<Card> cards) {
         return isFlush(cards) && isStraight(cards);
     }
     
+    /**
+     * Checks if a hand is a four of a kind.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a four of a kind, false otherwise.
+     */
     private static boolean isFourOfAKind(List<Card> cards) {
         Map<Integer, Long> rankCounts = cards.stream()
             .collect(Collectors.groupingBy(
@@ -99,6 +122,11 @@ public class HandEvaluator {
         return rankCounts.values().stream().anyMatch(count -> count >= 4);
     }
     
+    /**
+     * Checks if a hand is a full house.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a full house, false otherwise.
+     */
     private static boolean isFullHouse(List<Card> cards) {
         Map<Integer, Long> rankCounts = cards.stream()
             .collect(Collectors.groupingBy(
@@ -109,12 +137,22 @@ public class HandEvaluator {
                rankCounts.values().stream().anyMatch(count -> count == 2);
     }
     
+    /**
+     * Checks if a hand is a flush.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a flush, false otherwise.
+     */
     private static boolean isFlush(List<Card> cards) {
         if (cards.size() < 5) return false;
         int firstSuit = cards.get(0).getSuit();
         return cards.stream().allMatch(card -> card.getSuit() == firstSuit);
     }
     
+    /**
+     * Checks if a hand is a straight.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a straight, false otherwise.
+     */
     private static boolean isStraight(List<Card> cards) {
         if (cards.size() < 5) return false;
         List<Integer> ranks = cards.stream()
@@ -143,6 +181,11 @@ public class HandEvaluator {
         return true;
     }
     
+    /**
+     * Checks if a hand is a three of a kind.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a three of a kind, false otherwise.
+     */
     private static boolean isThreeOfAKind(List<Card> cards) {
         Map<Integer, Long> rankCounts = cards.stream()
             .collect(Collectors.groupingBy(
@@ -152,6 +195,11 @@ public class HandEvaluator {
         return rankCounts.values().stream().anyMatch(count -> count >= 3);
     }
     
+    /**
+     * Checks if a hand is a two pair.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a two pair, false otherwise.
+     */
     private static boolean isTwoPair(List<Card> cards) {
         Map<Integer, Long> rankCounts = cards.stream()
             .collect(Collectors.groupingBy(
@@ -164,6 +212,11 @@ public class HandEvaluator {
         return pairCount >= 2;
     }
     
+    /**
+     * Checks if a hand is a pair.
+     * @param cards The list of cards to check.
+     * @return True if the hand is a pair, false otherwise.
+     */
     private static boolean isPair(List<Card> cards) {
         Map<Integer, Long> rankCounts = cards.stream()
             .collect(Collectors.groupingBy(

@@ -8,17 +8,29 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+/**
+ * Represents the game over screen that displays the final game state.
+ */
 public class GameOverScreen {
     private final GameManager gameManager;
     private final Stage stage;
     private final boolean isWin;
     
+    /**
+     * Constructs a GameOverScreen with the given GameManager, Stage, and win status.
+     * @param gameManager The GameManager instance.
+     * @param stage The primary stage.
+     * @param isWin True if the player won, false otherwise.
+     */
     public GameOverScreen(GameManager gameManager, Stage stage, boolean isWin) {
         this.gameManager = gameManager;
         this.stage = stage;
         this.isWin = isWin;
     }
     
+    /**
+     * Shows the game over screen UI.
+     */
     public void show() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
@@ -57,18 +69,29 @@ public class GameOverScreen {
         stage.setScene(scene);
     }
     
+    /**
+     * Creates a menu button with the given text.
+     * @param text The text for the button.
+     * @return The created Button.
+     */
     private Button createMenuButton(String text) {
         Button button = new Button(text);
         button.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 10 20; -fx-min-width: 200px;");
         return button;
     }
     
+    /**
+     * Handles the play again button click.
+     */
     private void onPlayAgainClick() {
         gameManager.reset();
         BlindSelectionScreen blindSelection = new BlindSelectionScreen(gameManager, stage);
         blindSelection.show();
     }
     
+    /**
+     * Handles the main menu button click.
+     */
     private void onMainMenuClick() {
         gameManager.reset();
         MainMenuController mainMenu = new MainMenuController(gameManager, stage);

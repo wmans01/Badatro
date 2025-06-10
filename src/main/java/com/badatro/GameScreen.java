@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles the main gameplay screen, including card display, joker display, and user actions.
+ */
 public class GameScreen {
     private final GameManager gameManager;
     private final Stage stage;
@@ -25,6 +28,11 @@ public class GameScreen {
     private final Shop shop;
     private final ShopScreen shopScreen;
     
+    /**
+     * Constructs a GameScreen with the given GameManager and Stage.
+     * @param gameManager The GameManager instance.
+     * @param stage The primary stage.
+     */
     public GameScreen(GameManager gameManager, Stage stage) {
         this.gameManager = gameManager;
         this.stage = stage;
@@ -36,6 +44,9 @@ public class GameScreen {
         this.shop = new Shop(gameManager.getPlayer(), gameManager, shopScreen);
     }
     
+    /**
+     * Shows the game screen and initializes all UI components.
+     */
     public void show() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #2C3E50;");
@@ -98,6 +109,9 @@ public class GameScreen {
         stage.setScene(scene);
     }
     
+    /**
+     * Updates the display of active jokers in the UI.
+     */
     private void updateJokersDisplay() {
         jokersContainer.getChildren().clear();
         
@@ -117,6 +131,9 @@ public class GameScreen {
         }
     }
     
+    /**
+     * Updates the display of the player's hand in the UI.
+     */
     private void updateHandDisplay() {
         handContainer.getChildren().clear();
         
@@ -165,6 +182,10 @@ public class GameScreen {
         }
     }
     
+    /**
+     * Toggles the selection state of a card at the given index.
+     * @param index The index of the card to toggle.
+     */
     private void toggleCardSelection(int index) {
         if (selectedCardIndices.contains(index)) {
             selectedCardIndices.remove(Integer.valueOf(index));
@@ -176,6 +197,9 @@ public class GameScreen {
         updateHandDisplay();
     }
     
+    /**
+     * Plays the selected cards, updates the game state, and clears selection.
+     */
     private void playSelectedCards() {
         if (!selectedCardIndices.isEmpty()) {
             gameManager.playCards(new ArrayList<>(selectedCardIndices));
@@ -188,6 +212,9 @@ public class GameScreen {
         }
     }
     
+    /**
+     * Discards the selected cards, updates the game state, and clears selection.
+     */
     private void discardSelectedCards() {
         if (gameManager.getPlayer().getDiscardableHands() <= 0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -209,6 +236,9 @@ public class GameScreen {
         }
     }
     
+    /**
+     * Updates the game state, including UI and game over checks.
+     */
     private void updateGameState() {
         targetText.setText("Target: " + gameManager.getCurrentBlindTarget());
         gameManager.updateInfoPanel();

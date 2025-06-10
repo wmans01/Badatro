@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.ArrayList;
 import javafx.application.Platform;
 
+/**
+ * Manages the overall game state, player progress, blinds, scoring, and weather effects.
+ */
 public class GameManager {
     private Player player;
-    private final User user;
     private final List<Blind> blinds;
     private int currentBlindIndex;
-    private final DatabaseManager dbManager;
     private Deck deck;
     private Hand hand;
     private ToBeScored toBeScored;
@@ -27,12 +28,12 @@ public class GameManager {
     private boolean bigBlindCompleted;
     private boolean bossBlindCompleted;
     private ShopScreen shopScreen;
-    private User currentUser;
     private int currentAnte;
     private int currentBlind;
     private int currentMoney;
     private List<Joker> activeJokers;
     private GameOverScreen gameOverScreen;
+    private WeatherManager weatherManager;
     
     public enum BlindType {
         SMALL,
@@ -40,14 +41,16 @@ public class GameManager {
         BOSS
     }
     
-    public GameManager(User user, Stage stage) {
-        this.user = user;
-        this.currentUser = user;  // Initialize currentUser
+    /**
+     * Initializes the GameManager with the given stage and sets up the game state.
+     * @param stage The primary stage for the game.
+     */
+    public GameManager(Stage stage) {
         this.player = new Player();
         this.blinds = new ArrayList<>();
         this.currentBlindIndex = 0;
-        this.dbManager = new DatabaseManager();
         this.stage = stage;
+        this.weatherManager = new WeatherManager();
         initializeBlinds();
         this.deck = new Deck();
         this.hand = new Hand();
@@ -65,71 +68,74 @@ public class GameManager {
         this.activeJokers = new ArrayList<Joker>();
         this.gameOverScreen = new GameOverScreen(this, stage, false);
         
-        // Initialize game state from user
-        this.currentAnte = user.getCurrentAnte();
-        this.currentBlind = user.getCurrentBlind();
-        this.currentMoney = user.getCurrentMoney();
+        // Initialize game state
+        this.currentAnte = 1;
+        this.currentBlind = 1;
+        this.currentMoney = 4;
         
-        // Set player state from saved data
+        // Set player state
         player.setMoney(currentMoney);
         player.setAnte(currentAnte);
         player.setCurrentBlindLevel(currentBlind);
         
-        // Set blind type based on saved state
-        if (currentBlind % 3 == 0) {
-            blindType = BlindType.BIG;
-        } else if (currentBlind % 3 == 1) {
-            blindType = BlindType.SMALL;
-        } else {
-            blindType = BlindType.BOSS;
-        }
-        
-        // Load active jokers
-        for (String jokerName : user.getActiveJokers()) {
-            Joker joker = createJoker(jokerName);
-            if (joker != null) {
-                activeJokers.add(joker);
-            }
-        }
+        // Set initial blind type
+        blindType = BlindType.SMALL;
         
         updateBlindTarget();
     }
     
+    /**
+     * Initializes the list of blinds for the game.
+     */
     private void initializeBlinds() {
         // Add blinds in order of difficulty
         blinds.add(new Blind("Small Blind", 1, "Start your journey"));
         blinds.add(new Blind("Big Blind", 2, "Getting serious"));
-        blinds.add(new Blind("The Flop", 3, "Three cards to start"));
-        blinds.add(new Blind("The Turn", 4, "Fourth card changes everything"));
-        blinds.add(new Blind("The River", 5, "Final card, make it count"));
-        blinds.add(new Blind("The Showdown", 6, "Time to prove yourself"));
-        blinds.add(new Blind("The Champion", 7, "Only the best survive"));
-        blinds.add(new Blind("The Legend", 8, "Become a legend"));
-        blinds.add(new Blind("The Myth", 9, "Beyond legendary"));
-        blinds.add(new Blind("The God", 10, "Ascend to godhood"));
+        blinds.add(new Blind("Boss Blind", 3, "The ultimate challenge"));
     }
     
+    /**
+     * Shows the info panel window.
+     */
     public void showInfoPanel() {
         infoPanel.show();
     }
     
+    /**
+     * Hides the info panel window.
+     */
     public void hideInfoPanel() {
         infoPanel.hide();
     }
     
+    /**
+     * Updates the info panel with the latest game information.
+     */
     public void updateInfoPanel() {
         infoPanel.updateInfo();
     }
     
+    /**
+     * Updates the chips and multiplier display in the info panel.
+     * @param chips The number of chips to display.
+     * @param mult The multiplier to display.
+     */
     public void updateChipsAndMult(int chips, double mult) {
         currentMultiplier = mult;
         infoPanel.updateChipsAndMult(chips, mult);
     }
     
+    /**
+     * Sets the current blind type.
+     * @param type The blind type to set.
+     */
     public void setBlindType(BlindType type) {
         this.blindType = type;
     }
     
+    /**
+     * Updates the target chips required to clear the current blind.
+     */
     public void updateBlindTarget() {
         // Base target increases with ante and blind type
         int baseTarget = getBaseTargetForAnte(player.getCurrentBlindLevel());
@@ -137,7 +143,6 @@ public class GameManager {
         // Apply blind type multiplier
         switch (blindType) {
             case SMALL:
-                baseTarget = baseTarget;  // 1x
                 break;
             case BIG:
                 baseTarget = (int) (baseTarget * 1.5);  // 1.5x
@@ -150,6 +155,11 @@ public class GameManager {
         currentBlindTarget = baseTarget;
     }
     
+    /**
+     * Gets the base target for a given ante level.
+     * @param ante The ante level.
+     * @return The base target chips for the ante.
+     */
     private int getBaseTargetForAnte(int ante) {
         switch (ante) {
             case 1: return 300;
@@ -164,6 +174,10 @@ public class GameManager {
         }
     }
     
+    /**
+     * Draws n cards from the deck into the player's hand.
+     * @param n The number of cards to draw.
+     */
     public void drawCards(int n) {
         for (int i = 0; i < n && !deck.isEmpty(); i++) {
             Card card = deck.drawCard();
@@ -173,6 +187,10 @@ public class GameManager {
         }
     }
     
+    /**
+     * Plays the selected cards, evaluates the score, and updates the game state.
+     * @param cardIndices The indices of the cards to play.
+     */
     public void playCards(List<Integer> cardIndices) {
         if (cardIndices.isEmpty() || player.getPlayableHands() <= 0) {
             return;
@@ -225,6 +243,10 @@ public class GameManager {
         updateInfoPanel();
     }
     
+    /**
+     * Discards the selected cards and replenishes the hand.
+     * @param cardIndices The indices of the cards to discard.
+     */
     public void discardCards(List<Integer> cardIndices) {
         if (cardIndices.isEmpty() || player.getDiscardableHands() <= 0) {
             return;
@@ -245,81 +267,52 @@ public class GameManager {
         
         // Replenish hand
         drawCards(selectedCards.size());
-        
-        // Save player data
-        currentUser.setCurrentMoney(player.getMoney());
-        currentUser.setCurrentAnte(player.getAnte());
-        currentUser.setCurrentBlind(player.getCurrentBlindLevel());
-        dbManager.updateUser(currentUser);
     }
     
+    /**
+     * Handles logic for when a blind is cleared, including rewards and progression.
+     */
     private void blindCleared() {
-        try {
-            // Calculate money rewards
-            int baseReward = switch (blindType) {
-                case SMALL -> 3;
-                case BIG -> 4;
-                case BOSS -> 5;
-            };
-            
-            // Add money for remaining hands
-            int remainingHandsReward = player.getPlayableHands() + player.getDiscardableHands();
-            int totalReward = baseReward + remainingHandsReward;
-            
-            // Calculate interest (1$ per 5$, capped at 5)
-            int currentMoney = player.getMoney();
-            int interest = Math.min(5, currentMoney / 5);
-            totalReward += interest;
-            
-            // Add the reward to player's money
-            player.setMoney(currentMoney + totalReward);
-            
-            // Mark current blind as completed
-            switch (blindType) {
-                case SMALL:
-                    smallBlindCompleted = true;
-                    break;
-                case BIG:
-                    bigBlindCompleted = true;
-                    break;
-                case BOSS:
-                    bossBlindCompleted = true;
-                    // Increment ante and reset blind completion status
-                    player.setCurrentBlindLevel(player.getCurrentBlindLevel() + 1);
-                    player.setAnte(player.getAnte() + 1);
-                    smallBlindCompleted = false;
-                    bigBlindCompleted = false;
-                    bossBlindCompleted = false;
-                    break;
-            }
-            
-            // Update user's game state
-            currentUser.setCurrentAnte(player.getAnte());
-            currentUser.setCurrentBlind(player.getCurrentBlindLevel());
-            currentUser.setCurrentMoney(player.getMoney());
-            
-            // Save active jokers
-            List<String> activeJokerNames = new ArrayList<>();
-            for (Joker joker : activeJokers) {
-                activeJokerNames.add(joker.getName());
-            }
-            currentUser.setActiveJokers(activeJokerNames);
-            
-            // Save to database
-            dbManager.updateUser(currentUser);
-            
-            // Show shop screen
-            shopScreen.show();
-        } catch (Exception e) {
-            System.err.println("Error in blindCleared: " + e.getMessage());
-            e.printStackTrace();
-            // Try to save one more time
-            try {
-                dbManager.updateUser(currentUser);
-            } catch (Exception ex) {
-                System.err.println("Failed to save user data after error: " + ex.getMessage());
-            }
+        // Calculate money rewards
+        int baseReward = switch (blindType) {
+            case SMALL -> 3;
+            case BIG -> 4;
+            case BOSS -> 5;
+        };
+        
+        // Add money for remaining hands
+        int remainingHandsReward = player.getPlayableHands() + player.getDiscardableHands();
+        int totalReward = baseReward + remainingHandsReward;
+        
+        // Calculate interest (1$ per 5$, capped at 5)
+        int currentMoney = player.getMoney();
+        int interest = Math.min(5, currentMoney / 5);
+        totalReward += interest;
+        
+        // Add the reward to player's money
+        player.setMoney(currentMoney + totalReward);
+        
+        // Mark current blind as completed
+        switch (blindType) {
+            case SMALL:
+                smallBlindCompleted = true;
+                break;
+            case BIG:
+                bigBlindCompleted = true;
+                break;
+            case BOSS:
+                bossBlindCompleted = true;
+                // Increment ante and reset blind completion status
+                player.setCurrentBlindLevel(player.getCurrentBlindLevel() + 1);
+                player.setAnte(player.getAnte() + 1);
+                smallBlindCompleted = false;
+                bigBlindCompleted = false;
+                bossBlindCompleted = false;
+                break;
         }
+        
+        // Show shop screen
+        shopScreen.show();
     }
     
     private void gameOver(boolean isWin) {
@@ -328,23 +321,13 @@ public class GameManager {
         if (!isWin) {
             // Reset money to 4
             player.setMoney(4);
-            currentUser.setCurrentMoney(4);
             
             // Reset blind level to 1
             currentBlind = 1;
             player.setCurrentBlindLevel(1);
-            currentUser.setCurrentBlind(1);
             
             // Clear all jokers
             activeJokers.clear();
-            currentUser.setActiveJokers(new ArrayList<>());
-            
-            // Save the reset state
-            try {
-                dbManager.updateUser(currentUser);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
         
         // Hide info panel
@@ -363,48 +346,30 @@ public class GameManager {
             return 0;
         }
         
-        System.out.println("\n=== Score Calculation ===");
-        System.out.println("Cards played:");
-        for (Card card : cards) {
-            System.out.println("- " + card.getRank() + " of " + card.getSuit());
-        }
-        
         // Evaluate poker hand
         HandEvaluator.HandResult result = HandEvaluator.evaluateHand(cards);
-        System.out.println("\nPoker hand: " + result.getHandType());
         
         // Calculate base score
         int baseChips = result.getBaseChips();
         double baseMult = result.getBaseMult();
-        System.out.println("Base chips: " + baseChips);
-        System.out.println("Base multiplier: " + baseMult);
         
         // Add individual card values for all hands
         int cardChips = 0;
         for (Card card : cards) {
             int cardValue = HandEvaluator.calculateCardChips(card);
             cardChips += cardValue;
-            System.out.println(card.getRank() + " of " + card.getSuit() + " adds " + cardValue + " chips");
         }
         baseChips += cardChips;
-        System.out.println("Total card chips: " + cardChips);
-        System.out.println("Total base chips: " + baseChips);
         
         // Apply active joker effects additively
         double totalMult = baseMult;
         int totalChipBonus = 0;
-        
-        System.out.println("\nActive Jokers:");
-        if (activeJokers.isEmpty()) {
-            System.out.println("No active jokers");
-        }
         
         // First pass: calculate all multipliers additively
         for (Joker joker : activeJokers) {
             if (joker.isActive()) {
                 double multBonus = joker.calculateMultBonus(cards);
                 totalMult += multBonus;
-                System.out.println(joker.getName() + " adds " + multBonus + "x multiplier");
             }
         }
         
@@ -413,26 +378,20 @@ public class GameManager {
             if (joker.isActive()) {
                 int chipBonus = joker.calculateChipBonus(cards);
                 totalChipBonus += chipBonus;
-                System.out.println(joker.getName() + " adds " + chipBonus + " chips");
             }
         }
+
+        // Apply weather and time multiplier
+        totalMult *= weatherManager.getScoreMultiplier();
         
         // Apply multiplier and chip bonus
         int finalScore = (int) Math.round(baseChips * totalMult) + totalChipBonus;
-        
-        System.out.println("\nFinal Calculation:");
-        System.out.println("Base chips: " + baseChips);
-        System.out.println("Total multiplier: " + totalMult);
-        System.out.println("Total chip bonus: " + totalChipBonus);
-        System.out.println("Final score: " + finalScore);
-        System.out.println("===================\n");
         
         // Update UI
         updateChipsAndMult(baseChips, totalMult);
         
         // Check if game is over (no more playable hands and not enough chips)
         if (player.getPlayableHands() <= 0 && finalScore < currentBlindTarget) {
-            System.out.println("Game Over - Not enough chips to clear blind!");
             gameOver(false);
         }
         
@@ -470,9 +429,7 @@ public class GameManager {
     }
     
     public void endGame() {
-        System.out.println("DEBUG: End Game called");
         Platform.runLater(() -> {
-            System.out.println("DEBUG: Inside Platform.runLater for endGame");
             gameOver(false);
         });
     }
@@ -495,15 +452,18 @@ public class GameManager {
         this.shopScreen = new ShopScreen(this, stage);
         this.gameOverScreen = new GameOverScreen(this, stage, false);
         
-        // Restore active jokers
+        // Reset game state
+        this.currentAnte = 1;
+        this.currentBlind = 1;
+        this.currentMoney = 4;
+        
+        // Set player state
+        player.setMoney(currentMoney);
+        player.setAnte(currentAnte);
+        player.setCurrentBlindLevel(currentBlind);
+        
+        // Clear active jokers
         activeJokers.clear();
-        for (String jokerName : currentUser.getActiveJokers()) {
-            Joker joker = createJoker(jokerName);
-            if (joker != null) {
-                activeJokers.add(joker);
-                System.out.println("Restored joker after reset: " + jokerName);
-            }
-        }
         
         updateBlindTarget();
     }
@@ -548,16 +508,6 @@ public class GameManager {
         // Set blind type and update target
         blindType = type;
         updateBlindTarget();
-        
-        // Restore active jokers from user state
-        activeJokers.clear();
-        for (String jokerName : currentUser.getActiveJokers()) {
-            Joker joker = createJoker(jokerName);
-            if (joker != null) {
-                activeJokers.add(joker);
-                System.out.println("Restored joker for new blind: " + jokerName);
-            }
-        }
         
         // Update UI
         updateInfoPanel();
@@ -621,104 +571,11 @@ public class GameManager {
         return hand.getCards();
     }
     
-    public void updateUserStats() {
-        // Update user statistics
-        user.setHighScore(Math.max(user.getHighScore(), player.getMoney()));
-        user.addTotalMoney(player.getMoney());
-        user.incrementGamesPlayed();
-        if (currentBlindIndex >= blinds.size()) {
-            user.incrementGamesWon();
-        }
-        
-        // Save to database
-        dbManager.updateUser(user);
-    }
-    
-    public User getUser() {
-        return user;
-    }
-    
-    public void close() {
-        dbManager.close();
-    }
-    
-    public void startNewGame(User user) {
-        this.currentUser = user;
-        this.player = new Player();
-        this.deck = new Deck();
-        this.hand = new Hand();
-        this.discardPile = new DiscardPile();
-        this.toBeScored = new ToBeScored();
-        this.roundNumber = 1;
-        this.isGameOver = false;
-        this.currentScore = 0;
-        this.currentMultiplier = 1;
-        player.setPlayableHands(3);
-        player.setDiscardableHands(3);
-        
-        // Set blind type and update target
-        this.blindType = BlindType.SMALL;  // Start with SMALL blind (0)
-        this.currentBlind = 0;
-        player.setCurrentBlindLevel(0);
-        updateBlindTarget();
-        
-        // Load active jokers
-        activeJokers.clear();
-        for (String jokerName : user.getActiveJokers()) {
-            Joker joker = createJoker(jokerName);
-            if (joker != null) {
-                activeJokers.add(joker);
-            }
-        }
-        
-        // Update UI
-        updateInfoPanel();
-    }
-    
-    private Joker createJoker(String name) {
-        Joker joker = switch (name) {
-            case "Wrathful Joker" -> Joker.createWrathful(this);
-            case "Greedy Joker" -> Joker.createGreedy(this);
-            case "Jolly Joker" -> Joker.createJolly(this);
-            case "Droll Joker" -> Joker.createDroll(this);
-            default -> null;
-        };
-        
-        if (joker != null) {
-            joker.setActive(true);
-        }
-        return joker;
-    }
-    
-    private void handleBlindComplete() {
-        // Update user's game state
-        currentUser.setCurrentAnte(currentAnte);
-        currentUser.setCurrentBlind(currentBlind);
-        currentUser.setCurrentMoney(currentMoney);
-        
-        // Save active jokers
-        List<String> activeJokerNames = new ArrayList<>();
-        for (Joker joker : activeJokers) {
-            activeJokerNames.add(joker.getName());
-        }
-        currentUser.setActiveJokers(activeJokerNames);
-        
-        // Save to database
-        dbManager.updateUser(currentUser);
-        
-        // Show game over screen
-        gameOverScreen.show();
-    }
-    
-    private void updateUI() {
-        // Update UI elements with current game state
-        if (infoPanel != null) {
-            infoPanel.updateInfo();
-            infoPanel.updateChipsAndMult(currentScore, currentMultiplier);
-        }
-    }
-    
     public List<Joker> getActiveJokers() {
         return activeJokers;
+    }
+    
+    public WeatherManager getWeatherManager() {
+        return weatherManager;
     }
 } 
